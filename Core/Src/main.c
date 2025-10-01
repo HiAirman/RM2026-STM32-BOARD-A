@@ -43,15 +43,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t ticks = 0;
 
-uint8_t swStatus = 0;//0 :
-
-GPIO_PinState LEDState = GPIO_PIN_RESET;
-
-uint8_t flag = 1;
-
-uint8_t Mytime = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,17 +54,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t checkSW()
-{
-  uint8_t flagPin = 0;
-  for (int i = 0; i < 10; i++)
-  {
-    flagPin += (HAL_GPIO_ReadPin(SWKEY_GPIO_Port, SWKEY_Pin) == GPIO_PIN_SET);
-    HAL_Delay(1);
-  }
-  if (flagPin >= 9) return 1;
-  return 0;
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -112,40 +94,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    ticks = HAL_GetTick();
-    if (checkSW() == 1)
-    {
-      if (swStatus == 0) swStatus = 1;
-      else swStatus = 0;
-    }
-		Mytime = (ticks / 200) % 2;
-    if (flag == Mytime)
-    {
-		  if (LEDState == GPIO_PIN_RESET){
-			  LEDState = GPIO_PIN_SET;
-		  }else {
-			  LEDState = GPIO_PIN_RESET;
-		  }
-      if (flag == 1){
-        flag = 0;
-      }else {
-        flag = 1;
-      }
-      if (swStatus)
-      {
-				HAL_GPIO_WritePin(LEDG_GPIO_Port, LEDG_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, LEDState);
-      }
-      else
-      {
-				HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(LEDG_GPIO_Port, LEDG_Pin, LEDState);
-      }
-    }
-
-
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
