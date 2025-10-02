@@ -3,6 +3,8 @@
 //
 
 #include <math.h>
+#include <string.h>
+
 #include "tim.h"
 #include "usart.h"
 
@@ -12,6 +14,7 @@ uint32_t brt = 0;
 uint32_t timems = 0;
 
 extern uint8_t rx_msg[4];
+extern uint8_t rx_buffer[20];
 
 //处理timer2中断
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -34,15 +37,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if (huart == &huart7)
     {
         //收到R开灯，收到M灭灯
-        if (rx_msg[0] == 'R')
-        {
-            HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_RESET);
-        }
-        else if (rx_msg[0] == 'M')
-        {
-            HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_SET);
-        }
-        HAL_UART_Receive_IT(&huart7, rx_msg, 1);//重新接收下一条message
+        // if (rx_msg[0] == 'R')
+        // {
+        //     HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_RESET);
+        // }
+        // else if (rx_msg[0] == 'M')
+        // {
+        //     HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_SET);
+        // }
+        // HAL_UART_Receive_IT(&huart7, rx_msg, 1);//非阻塞式接收_重新接收下一条message
+        //buffer移位
+        strncat(rx_buffer, (char *)rx_msg, sizeof(rx_msg));
+
+        HAL_UART_Receive_IT(&huart7, rx_msg, 3);
     }
 
 }
