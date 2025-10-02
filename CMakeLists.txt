@@ -33,7 +33,7 @@ enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
-        Core/Src/timer_interrupt_handler.c
+        Core/Src/callback.c
 )
 
 # Add STM32CubeMX generated sources
