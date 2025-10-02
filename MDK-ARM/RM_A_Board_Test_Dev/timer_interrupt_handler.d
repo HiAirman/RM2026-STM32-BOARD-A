@@ -1,4 +1,6 @@
-rm_a_board_test_dev/stm32f4xx_hal_msp.o: ..\Core\Src\stm32f4xx_hal_msp.c \
+rm_a_board_test_dev/timer_interrupt_handler.o: \
+  ..\Core\Src\timer_interrupt_handler.c \
+  ..\Core\Inc\timer_interrupt_handler.h ..\Core\Inc\tim.h \
   ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
@@ -27,4 +29,6 @@ rm_a_board_test_dev/stm32f4xx_hal_msp.o: ..\Core\Src\stm32f4xx_hal_msp.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
+  D:\Program_File\STM32_Dev_Tools\Keil\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
+  ..\Core\Inc\gpio.h
