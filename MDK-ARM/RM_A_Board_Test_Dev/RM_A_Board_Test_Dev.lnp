@@ -1,9 +1,10 @@
 --cpu=Cortex-M4.fp.sp
 "rm_a_board_test_dev\startup_stm32f427xx.o"
-"rm_a_board_test_dev\timer_interrupt_handler.o"
+"rm_a_board_test_dev\callback.o"
 "rm_a_board_test_dev\main.o"
 "rm_a_board_test_dev\gpio.o"
 "rm_a_board_test_dev\tim.o"
+"rm_a_board_test_dev\usart.o"
 "rm_a_board_test_dev\stm32f4xx_it.o"
 "rm_a_board_test_dev\stm32f4xx_hal_msp.o"
 "rm_a_board_test_dev\stm32f4xx_hal_tim.o"
@@ -21,6 +22,7 @@
 "rm_a_board_test_dev\stm32f4xx_hal_cortex.o"
 "rm_a_board_test_dev\stm32f4xx_hal.o"
 "rm_a_board_test_dev\stm32f4xx_hal_exti.o"
+"rm_a_board_test_dev\stm32f4xx_hal_uart.o"
 "rm_a_board_test_dev\system_stm32f4xx.o"
 --strict --scatter "RM_A_Board_Test_Dev\RM_A_Board_Test_Dev.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
