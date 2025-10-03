@@ -59,8 +59,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SWKEY_Pin GPIO_PIN_2
 #define SWKEY_GPIO_Port GPIOB
-#define LEDR_Pin GPIO_PIN_11
-#define LEDR_GPIO_Port GPIOE
 #define LEDG_Pin GPIO_PIN_14
 #define LEDG_GPIO_Port GPIOF
 
