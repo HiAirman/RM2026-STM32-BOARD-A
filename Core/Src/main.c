@@ -18,9 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
-#include <math.h>
-
 #include "can.h"
 #include "tim.h"
 #include "gpio.h"
@@ -71,6 +68,11 @@ CAN_FilterTypeDef filter_config = {
 
 uint8_t rx_data[8];
 uint8_t tx_data[8];
+
+uint16_t angle = 0;
+uint16_t speed = 0;
+uint16_t current = 0;
+uint8_t temperature = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,22 +132,40 @@ int main(void)
   tx_data[0] = 0x00;
   tx_data[1] = 0x00;
   tx_data[2] = 0x00;
-  tx_data[3] = 0xC0;
+  tx_data[3] = 0x00;
   tx_data[4] = 0x00;
   tx_data[5] = 0x00;
   tx_data[6] = 0x00;
   tx_data[7] = 0x00;
-  tx_data[8] = 0x00;
+
+  angle = 0;
+  speed = 0;
+  current = 0;
+  temperature = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    uint32_t currentMax = 16384;
-
-    uint32_t current_value = currentMax  * sinf( HAL_GetTick() / 1000.f );
-
+    //最大电流值
+    // uint16_t currentMax = 16383;
+    // //设定电流值
+    // float current_A = 0.55f;
+    // //输出值
+    // int16_t current_value = (int16_t)(currentMax * (current_A / 20.0f ) * sinf(  0.5 * HAL_GetTick() / 1000.f ));
+    // //压缩后的16bit数据
+    // uint16_t compressed_value;
+    // if (current_value < 0) {
+    //   compressed_value = 0;
+    // } else if (current_value > 0xFFFF) {
+    //   compressed_value = 0xFFFF;
+    // } else {
+    //   compressed_value = (uint16_t)current_value;
+    // }
+    // //写入至TX data
+    // tx_data[3] = compressed_value & 0xFF;//高字节
+    // tx_data[2] = (compressed_value >> 8) & 0xFF;//低字节
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
