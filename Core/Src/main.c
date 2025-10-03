@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
+#include <math.h>
+
 #include "can.h"
 #include "tim.h"
 #include "gpio.h"
@@ -123,12 +126,26 @@ int main(void)
   //启动timer6并使能中断
   HAL_TIM_Base_Start_IT(&htim6);
 
+  //test
+  tx_data[0] = 0x00;
+  tx_data[1] = 0x00;
+  tx_data[2] = 0x00;
+  tx_data[3] = 0xC0;
+  tx_data[4] = 0x00;
+  tx_data[5] = 0x00;
+  tx_data[6] = 0x00;
+  tx_data[7] = 0x00;
+  tx_data[8] = 0x00;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    uint32_t currentMax = 16384;
+
+    uint32_t current_value = currentMax  * sinf( HAL_GetTick() / 1000.f );
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
