@@ -49,7 +49,8 @@
 
 /* USER CODE BEGIN PV */
 uint8_t rx_msg[4];
-uint8_t rx_buffer[20];
+uint64_t rx_buffer[10] = {0};
+uint8_t rx_buffer_lenth = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -102,8 +103,6 @@ int main(void)
 
   //UART message
   uint8_t tx_msg[3];
-  //init buffer
-  memset(rx_buffer, 0, sizeof(rx_buffer));
   //receive a message
   HAL_UART_Receive_IT(&huart7, rx_msg, 3);
   /* USER CODE END 2 */
@@ -117,12 +116,14 @@ int main(void)
     //HAL_Delay(1000);
 
     //移位缓冲区并发送
-    if (rx_buffer[0] != 0)
-    {
-      HAL_UART_Transmit_IT(&huart7, rx_buffer,sizeof(rx_buffer));
-      memset(rx_buffer, 0, sizeof(rx_buffer));
-      HAL_Delay(100);
-    }
+      if (rx_buffer_lenth != 0 && rx_buffer[0] != 0) {
+          tx_msg[0] = rx_buffer[rx_buffer_lenth - 1] & 0xFF;
+          tx_msg[1] = rx_buffer[rx_buffer_lenth - 1] >> 8 & 0xFF;
+          tx_msg[2] = rx_buffer[rx_buffer_lenth - 1] >> 16 & 0xFF;
+          rx_buffer_lenth--;
+          rx_buffer[rx_buffer_lenth - 1] = 0;
+          HAL_UART_Transmit_IT(&huart7, tx_msg, 3);
+      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

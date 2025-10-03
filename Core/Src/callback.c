@@ -14,7 +14,8 @@ uint32_t brt = 0;
 uint32_t timems = 0;
 
 extern uint8_t rx_msg[4];
-extern uint8_t rx_buffer[20];
+extern uint64_t rx_buffer[10];
+extern uint8_t rx_buffer_lenth;
 
 //处理timer2中断
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -47,8 +48,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         // }
         // HAL_UART_Receive_IT(&huart7, rx_msg, 1);//非阻塞式接收_重新接收下一条message
         //buffer移位
-        strncat(rx_buffer, (char *)rx_msg, sizeof(rx_msg));
+        for (uint8_t i = 10; i > 1; i--) {
+            rx_buffer[i - 1] = rx_buffer[i - 2];
+        }
+        rx_buffer[0] = 0;
 
+        rx_buffer[0] = (rx_buffer[0] << 8) | rx_msg[0];
+        rx_buffer[0] = (rx_buffer[0] << 8) | rx_msg[1];
+        rx_buffer[0] = (rx_buffer[0] << 8) | rx_msg[2];
+        rx_buffer_lenth++;
+        //继续接收
         HAL_UART_Receive_IT(&huart7, rx_msg, 3);
     }
 
