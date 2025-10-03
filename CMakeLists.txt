@@ -33,7 +33,7 @@ enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
-        Core/Src/callback.h
+        Core/Src/callback.cpp
         Core/Src/M3508_Motor.cpp
         Core/Inc/M3508_Motor.h)
 

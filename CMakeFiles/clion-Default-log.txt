@@ -1,0 +1,5 @@
+"D:\Program_File\JetBrains\CLion 2025.2.2\bin\cmake\win\x64\bin\cmake.exe" "-DCMAKE_MAKE_PROGRAM=D:/Program_File/JetBrains/CLion 2025.2.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S C:\Users\HiAir\Desktop\STM\TestProject\RM_A_Board_Test_Dev -B C:\Users\HiAir\Desktop\STM\TestProject\RM_A_Board_Test_Dev
+Build type: Debug
+-- Configuring done (0.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Users/HiAir/Desktop/STM/TestProject/RM_A_Board_Test_Dev
