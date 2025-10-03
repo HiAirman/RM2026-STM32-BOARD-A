@@ -9,4 +9,5 @@ Every day is a branch, and is developed from the main branch.
 So the branches are independent with a same father - main branch.
 
 ## Branch Introduction
-Day2_PWM: PWM generating...!
+Day2_watchDog: watchDog feeding
+feat:when button pressed, feed dog, else reset by watch dog.
