@@ -2,7 +2,7 @@
 // Created by HiAir on 2025/10/3.
 //
 
-#include "M3508_Motor.h"
+#include "M3508_motor.h"
 
 extern uint16_t angle;
 extern uint16_t speed;
@@ -20,4 +20,4 @@ void M3508_Motor::canRxMsgCallBack(const uint8_t rx_data_[8]){
 
 }
 
-M3508_Motor Motor = M3508_Motor(3591/187);
+M3508_Motor motor = M3508_Motor(3591/187);

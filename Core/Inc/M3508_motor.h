@@ -25,4 +25,6 @@ public:
 
 };
 
+extern M3508_Motor motor;
+
 #endif //RM_A_BOARD_TEST_DEV_M3508_MOTOR_H
