@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "can.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -43,7 +45,34 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+CAN_RxHeaderTypeDef rx_header;
+CAN_TxHeaderTypeDef tx_header = {
+  .StdId = 0x200,
+  .ExtId = 0,
+  .IDE = CAN_ID_STD,
+  .RTR = CAN_RTR_DATA,
+  .DLC = 8,
+  .TransmitGlobalTime = DISABLE
+};
+CAN_FilterTypeDef filter_config = {
+  .FilterIdHigh = 0x0000,
+  .FilterIdLow = 0x0000,
+  .FilterMaskIdHigh = 0x0000,
+  .FilterMaskIdLow = 0x0000,
+  .FilterFIFOAssignment = CAN_FILTER_FIFO0,
+  .FilterBank = 0,
+  .FilterMode = CAN_FILTERMODE_IDMASK,
+  .FilterScale = CAN_FILTERSCALE_32BIT,
+  .FilterActivation = ENABLE
+};
 
+uint8_t rx_data[8];
+uint8_t tx_data[8];
+
+uint16_t angle = 0;
+uint16_t speed = 0;
+uint16_t current = 0;
+uint8_t temperature = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,14 +115,57 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_CAN1_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
+  //CAN 过滤规则配置
+  HAL_CAN_ConfigFilter(&hcan1, &filter_config);
+  //启动CAN控制器
+  HAL_CAN_Start(&hcan1);
+  //激活CAN接收中断
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
 
+  //启动timer6并使能中断
+  HAL_TIM_Base_Start_IT(&htim6);
+
+  //test
+  tx_data[0] = 0x00;
+  tx_data[1] = 0x00;
+  tx_data[2] = 0x00;
+  tx_data[3] = 0x00;
+  tx_data[4] = 0x00;
+  tx_data[5] = 0x00;
+  tx_data[6] = 0x00;
+  tx_data[7] = 0x00;
+
+  angle = 0;
+  speed = 0;
+  current = 0;
+  temperature = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    //最大电流值
+    // uint16_t currentMax = 16383;
+    // //设定电流值
+    // float current_A = 0.55f;
+    // //输出值
+    // int16_t current_value = (int16_t)(currentMax * (current_A / 20.0f ) * sinf(  0.5 * HAL_GetTick() / 1000.f ));
+    // //压缩后的16bit数据
+    // uint16_t compressed_value;
+    // if (current_value < 0) {
+    //   compressed_value = 0;
+    // } else if (current_value > 0xFFFF) {
+    //   compressed_value = 0xFFFF;
+    // } else {
+    //   compressed_value = (uint16_t)current_value;
+    // }
+    // //写入至TX data
+    // tx_data[3] = compressed_value & 0xFF;//高字节
+    // tx_data[2] = (compressed_value >> 8) & 0xFF;//低字节
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -123,8 +195,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 15;
-  RCC_OscInitStruct.PLL.PLLN = 216;
+  RCC_OscInitStruct.PLL.PLLM = 6;
+  RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
