@@ -12,12 +12,6 @@
 DebugConfig
 *uvguix*
 
-# CMakeFiles
-CMakeFiles
-CMakeCache.txt
-Makefile
-Testing
-
 *.o
 *.d
 *.hex
