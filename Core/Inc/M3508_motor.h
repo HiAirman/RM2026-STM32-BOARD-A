@@ -22,7 +22,7 @@ private :
     float delta_ecd_angle_ = 0.f; // deg 编码器端新转动角度
     float rotate_speed_ = 0.f; // dps 反馈转子转速
     float current_ = 0.f; // A 反馈转矩电流
-    float temp_ = 0.f; // ℃ 反馈电机角度
+    float temp_ = 0.f; // ℃ 反馈电机温度
 };
 
 extern M3508_Motor motor;
