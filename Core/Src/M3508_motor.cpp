@@ -26,19 +26,22 @@ void M3508_Motor::MotorInitialization() {
 
 
 void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
-    if (rx_ID != rx_ID_) {return;}
+    if (rx_ID != rx_ID_) {
+        return;
+    }
+    //outdated
     angle = (int16_t)((rx_data_[0] << 8) | rx_data_[1]) * 360.f / 8191.f; //单位 °
     speed = (int16_t)((rx_data_[2] << 8) | rx_data_[3]); //单位 RPM
     current = (int16_t)((rx_data_[4] << 8) | rx_data_[5]) * 20.f / 16384.f; //单位 A
     temperature = (int8_t)rx_data_[6]; //单位 ℃
-
+    //解析can收到的数据
     last_ecd_angle_ = ecd_angle_;
     ecd_angle_ = (int16_t)((rx_data_[0] << 8) | rx_data_[1]) * 360.f / 8191.f; //单位 °
     rotate_speed_ = (int16_t)((rx_data_[2] << 8) | rx_data_[3]) * 360 / 60; //单位 dps
     current_ = (int16_t)((rx_data_[4] << 8) | rx_data_[5]) * 20.f / 16384.f; //单位 A
     temp_ = (int8_t)rx_data_[6]; //单位 ℃
 
-    //假定两次采集之间 转动角度小于360
+    //假定两次采集之间 转动角度小于360 计算angle
     if (rotate_speed_ >= 0.f) {
         if (ecd_angle_ > last_ecd_angle_) {
             delta_angle_ = (ecd_angle_ - last_ecd_angle_) / kratio_;
@@ -52,13 +55,12 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
             delta_angle_ = (ecd_angle_ - 360.f - last_ecd_angle_) / kratio_;
         }
     }
-
     angle_ += delta_angle_;
 }
 
 // from torque to current current = 2.7 * torque + 1
-void M3508_Motor::MotorOutput(const float torque) {
-    float output_current = 2.7f * torque + 1.0f;
+void M3508_Motor::MotorOutput() {
+    float output_current = 2.7f * output_torque_ + 1.0f;
     int16_t output_value;
     if (abs(output_current) <= 20.0f) {
         output_value = (int16_t)(output_current * 16383.f / 20.f);
@@ -74,5 +76,11 @@ void M3508_Motor::MotorOutput(const float torque) {
     uint32_t txMailBox;
     HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
 }
+
+void M3508_Motor::MotorOutput(const float torque) {
+    set_output_torque(torque);
+    MotorOutput();
+}
+
 
 M3508_Motor motor = M3508_Motor(3591 / 187, 0x201);
