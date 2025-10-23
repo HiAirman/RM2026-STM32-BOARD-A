@@ -54,7 +54,10 @@ private :
     float rotate_speed_ = 0.f; // dps 反馈转子转速
     float current_ = 0.f; // A 反馈转矩电流
     float temp_ = 0.f; // ℃ 反馈电机温度
+    //写
     float output_torque_ = 0.f; // N·m 设置电机输出扭矩
+    //flag
+    bool flag_ = false;
 
     //can对应结构体
     CAN_TxHeaderTypeDef tx_header = {
