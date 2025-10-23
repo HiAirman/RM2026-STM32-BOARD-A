@@ -4,15 +4,29 @@
 
 #include "M3508_motor.h"
 
+#include <math.h>
+
+#include "can.h"
+
 extern uint16_t angle;
 extern uint16_t speed;
 extern uint16_t current;
 extern uint8_t temperature;
 
-M3508_Motor::M3508_Motor(const float kratio):
-    kratio_(kratio) {}
+M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID):
+    kratio_(kratio),
+    rx_ID_(motor_rx_ID) {}
 
-void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8]) {
+void M3508_Motor::MotorInitialization() {
+    //初始化
+
+    //保护输出：0
+    MotorOutput(0);
+}
+
+
+void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
+    if (rx_ID != rx_ID_) {return;}
     angle = (int16_t)((rx_data_[0] << 8) | rx_data_[1]) * 360.f / 8191.f; //单位 °
     speed = (int16_t)((rx_data_[2] << 8) | rx_data_[3]); //单位 RPM
     current = (int16_t)((rx_data_[4] << 8) | rx_data_[5]) * 20.f / 16384.f; //单位 A
@@ -42,4 +56,23 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8]) {
     angle_ += delta_angle_;
 }
 
-M3508_Motor motor = M3508_Motor(3591 / 187);
+// from torque to current current = 2.7 * torque + 1
+void M3508_Motor::MotorOutput(const float torque) {
+    float output_current = 2.7f * torque + 1.0f;
+    int16_t output_value;
+    if (abs(output_current) <= 20.0f) {
+        output_value = (int16_t)(output_current * 16383.f / 20.f);
+    } else {
+        output_value = 0;
+    }
+
+    uint8_t motor_tx_data[8] = { 0 };
+
+    motor_tx_data[2] = ((uint16_t)output_value) & 0xFF; //低字节
+    motor_tx_data[3] = ((uint16_t)output_value >> 8) & 0xFF; //高字节
+    //发送tx包
+    uint32_t txMailBox;
+    HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
+}
+
+M3508_Motor motor = M3508_Motor(3591 / 187, 0x201);
