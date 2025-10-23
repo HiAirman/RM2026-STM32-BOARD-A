@@ -66,7 +66,7 @@ void M3508_Motor::MotorOutput() {
         uint32_t txMailBox;
         HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
     }
-    float output_current = 2.7f * output_torque_ + 1.0f;
+    float output_current = (2.7f * abs(output_torque_) + 0.2f) * output_torque_ / abs(output_torque_); //保持方向
     int16_t output_value;
     if (abs(output_current) <= 20.0f) {
         output_value = (int16_t)(output_current * 16383.f / 20.f);
