@@ -60,6 +60,12 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
 
 // from torque to current current = 2.7 * torque + 1
 void M3508_Motor::MotorOutput() {
+    if (flag_ == false) {
+        //如果flag置0，直接输出0
+        uint8_t motor_tx_data[8] = { 0 };
+        uint32_t txMailBox;
+        HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
+    }
     float output_current = 2.7f * output_torque_ + 1.0f;
     int16_t output_value;
     if (abs(output_current) <= 20.0f) {

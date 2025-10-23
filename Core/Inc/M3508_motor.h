@@ -70,6 +70,8 @@ private :
     };
     //can对应变量
     int rx_ID_;
+
+    //私有方法
 };
 
 extern M3508_Motor motor;
