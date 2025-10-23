@@ -58,7 +58,7 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
     angle_ += delta_angle_;
 }
 
-// from torque to current current = 2.7 * torque + 1
+// from torque to current current = 2.7 * torque + 0.2
 void M3508_Motor::MotorOutput() {
     if (flag_ == false) {
         //如果flag置0，直接输出0
@@ -109,4 +109,4 @@ void M3508_Motor::monitor_motor_current() {
 }
 
 
-M3508_Motor motor = M3508_Motor(3591 / 187, 0x201);
+M3508_Motor motor1 = M3508_Motor(3591 / 187, 0x201);

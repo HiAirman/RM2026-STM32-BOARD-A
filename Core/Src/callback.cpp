@@ -16,7 +16,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
         //读包
         HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rx_header, rx_data);
         //自定义函数解析rx_data
-        motor.CanRxMsgCallBack(rx_data, rx_header.StdId);
+        motor1.CanRxMsgCallBack(rx_data, rx_header.StdId);
     }
 }
 

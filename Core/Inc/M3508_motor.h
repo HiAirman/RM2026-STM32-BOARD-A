@@ -74,6 +74,6 @@ private :
     void monitor_motor_current();
 };
 
-extern M3508_Motor motor;
+extern M3508_Motor motor1;
 
 #endif //RM_A_BOARD_TEST_DEV_M3508_MOTOR_H
