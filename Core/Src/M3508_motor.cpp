@@ -96,13 +96,13 @@ void M3508_Motor::SetFlag(bool flag) {
     }
 }
 
-void M3508_Motor::check_motor_temperature() {
+void M3508_Motor::monitor_motor_temperature() {
     if (temp_ > 125) {
         flag_ = false;
     }
 }
 
-void M3508_Motor::chech_motor_current() {
+void M3508_Motor::monitor_motor_current() {
     if (current_ > 14.5) {
         flag_ = false;
     }

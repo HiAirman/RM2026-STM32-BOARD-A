@@ -45,6 +45,7 @@ public:
 
 private :
     const float kratio_ = 0.f; //电机减速比
+    const int rx_ID_; //Can接收时对应ID
     //读
     float angle_ = 0.f; // deg 输出端累计转动角度
     float delta_angle_ = 0.f; // deg 输出端新转动角度
@@ -68,12 +69,9 @@ private :
         .DLC = 8, //数据长度
         .TransmitGlobalTime = DISABLE
     };
-    //can对应变量
-    int rx_ID_;
-
     //私有方法
-    void check_motor_temperature();
-    void chech_motor_current();
+    void monitor_motor_temperature();
+    void monitor_motor_current();
 };
 
 extern M3508_Motor motor;
