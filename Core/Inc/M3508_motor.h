@@ -72,6 +72,8 @@ private :
     int rx_ID_;
 
     //私有方法
+    void check_motor_temperature();
+    void chech_motor_current();
 };
 
 extern M3508_Motor motor;
