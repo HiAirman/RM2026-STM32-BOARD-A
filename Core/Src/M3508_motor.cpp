@@ -85,6 +85,8 @@ void M3508_Motor::MotorOutput(const float torque) {
 void M3508_Motor::SetFlag(bool flag) {
     if (output_torque_ < 4.5f) {
         flag_ = flag;
+    } else {
+        flag_ = false;
     }
 }
 
