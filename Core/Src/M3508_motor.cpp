@@ -23,8 +23,8 @@ M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID,
     feedforward_intensity_(0.0f), output_intensity_(0.0f),
     control_method_(TORQUE) {
     //initialize pid
-    spid_ = PID(kp_spid, ki_spid, kd_spid, 10, 4.7, 1); //输出Torque
-    ppid_ = PID(kp_ppid, ki_ppid, kd_ppid, 0, 2400, 1); //输出speed
+    spid_ = PID(kp_spid, ki_spid, kd_spid, 10, 4.7, 1, 0.001); //输出Torque
+    ppid_ = PID(kp_ppid, ki_ppid, kd_ppid, 0, 2400, 1, 0.001); //输出speed
 }
 
 void M3508_Motor::MotorInitialization() {
@@ -165,4 +165,6 @@ void M3508_Motor::MonitorMotorCurrent() {
 }
 
 
-M3508_Motor motor1 = M3508_Motor(3591 / 187, 0x201);
+M3508_Motor motor1 = M3508_Motor(3591 / 187, 0x201,
+                                0.01, 0.0, 0.0,
+                                0.01, 0.0, 0.0);
