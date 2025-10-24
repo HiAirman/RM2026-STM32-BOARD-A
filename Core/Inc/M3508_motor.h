@@ -28,22 +28,24 @@
 
 class M3508_Motor {
 public:
-    explicit M3508_Motor(float kratio, const int motor_rx_ID);
+    explicit M3508_Motor(float kratio, const int motor_rx_ID,
+                        const float kp_ppid, const float ki_ppid,const float kd_ppid,
+                        const float kp_spid, const float ki_spid, const float kd_spi);
     //初始化应紧跟CAN初始化，在tim初始化之前
     void MotorInitialization();
     //CAN RX 回调函数中调用
     void CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID);
-    //TIM触发回调函数
+    //TIM触发回调函数：计算输出值并调用output
     void TimerCallback();
     //控制电机输出对应扭矩
     void MotorOutput();
     void MotorOutput(const float torque);
-    //前馈pid控制
+    //前馈pid控制: 设置目标
     void SetPosition(float target_position, float feedforward_speed, float feedforward_intensity);
     void SetSpeed(float target_speed, float feedforward_intensity);
     void SetIntensity(float intensity);
     //将flag设为对应值
-    void SetFlag(bool flag);
+    void SetFlag(const uint8_t flag);
     //getters
     void get_angle();
     void get_rotate_speed();
@@ -66,7 +68,7 @@ private :
     //写
     float output_torque_ = 0.f; // N·m 设置电机输出扭矩
     //flag
-    bool flag_ = false;
+    uint8_t flag_ = 1;
 
     //can对应结构体
     CAN_TxHeaderTypeDef tx_header = {

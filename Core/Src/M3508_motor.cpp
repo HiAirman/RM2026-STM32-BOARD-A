@@ -13,9 +13,19 @@ extern uint16_t speed;
 extern uint16_t current;
 extern uint8_t temperature;
 
-M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID):
+M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID,
+                        const float kp_ppid, const float ki_ppid,const float kd_ppid,
+                        const float kp_spid, const float ki_spid, const float kd_spid):
     kratio_(kratio),
-    rx_ID_(motor_rx_ID) {}
+    rx_ID_(motor_rx_ID),
+    target_angle_(0.0f), fdb_angle_(0.0f),
+    target_speed_(0.0f), fdb_speed_(0.0f), feedforward_speed_(0.0f),
+    feedforward_intensity_(0.0f), output_intensity_(0.0f),
+    control_method_(TORQUE) {
+    //initialize pid
+    spid_ = PID(kp_spid, ki_spid, kd_spid, 10, 4.7, 1); //输出Torque
+    ppid_ = PID(kp_ppid, ki_ppid, kd_ppid, 0, 2400, 1); //输出speed
+}
 
 void M3508_Motor::MotorInitialization() {
     //初始化
@@ -38,7 +48,7 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
     //解析can收到的数据
     last_ecd_angle_ = ecd_angle_;
     ecd_angle_ = (int16_t)((rx_data_[0] << 8) | rx_data_[1]) * 360.f / 8191.f; //单位 °
-    rotate_speed_ = (int16_t)((rx_data_[2] << 8) | rx_data_[3]) * 360 / 60; //单位 dps
+    rotate_speed_ = (int16_t)((rx_data_[2] << 8) | rx_data_[3]) * 360.f / 60.f; //单位 dps
     current_ = (int16_t)((rx_data_[4] << 8) | rx_data_[5]) * 20.f / 16384.f; //单位 A
     temp_ = (int8_t)rx_data_[6]; //单位 ℃
 
@@ -57,6 +67,10 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
         }
     }
     angle_ += delta_angle_;
+
+    //为pid传送数据
+    fdb_angle_ = angle_;
+    fdb_speed_ = rotate_speed_ / kratio_;
 }
 
 void M3508_Motor::TimerCallback() {
@@ -86,27 +100,28 @@ void M3508_Motor::TimerCallback() {
 
 // from torque to current current = 2.7 * torque + 0.2
 void M3508_Motor::MotorOutput() {
-    if (flag_ == false) {
-        //如果flag置0，直接输出0
+    if (flag_ == 1) {
+        //如果flag置1，直接输出0
         uint8_t motor_tx_data[8] = { 0 };
         uint32_t txMailBox;
         HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
-    }
-    float output_current = (2.7f * abs(output_torque_) + 0.2f) * output_torque_ / abs(output_torque_); //保持方向
-    int16_t output_value;
-    if (abs(output_current) <= 20.0f) {
-        output_value = (int16_t)(output_current * 16383.f / 20.f);
     } else {
-        output_value = 0;
+        float output_current = (2.7f * abs(output_torque_) + 0.2f) * output_torque_ / abs(output_torque_); //保持方向
+        int16_t output_value;
+        if (abs(output_current) <= 20.0f) {
+            output_value = (int16_t)(output_current * 16383.f / 20.f);
+        } else {
+            output_value = 0;
+        }
+
+        uint8_t motor_tx_data[8] = { 0 };
+
+        motor_tx_data[2] = ((uint16_t)output_value) & 0xFF; //低字节
+        motor_tx_data[3] = ((uint16_t)output_value >> 8) & 0xFF; //高字节
+        //发送tx包
+        uint32_t txMailBox;
+        HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
     }
-
-    uint8_t motor_tx_data[8] = { 0 };
-
-    motor_tx_data[2] = ((uint16_t)output_value) & 0xFF; //低字节
-    motor_tx_data[3] = ((uint16_t)output_value >> 8) & 0xFF; //高字节
-    //发送tx包
-    uint32_t txMailBox;
-    HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
 }
 
 void M3508_Motor::MotorOutput(const float torque) {
@@ -129,23 +144,23 @@ void M3508_Motor::SetIntensity(float intensity) {
     output_torque_ = intensity;
 }
 
-void M3508_Motor::SetFlag(bool flag) {
+void M3508_Motor::SetFlag(const uint8_t flag) {
     if (output_torque_ < 4.5f) {
         flag_ = flag;
     } else {
-        flag_ = false;
+        flag_ = 1;
     }
 }
 
 void M3508_Motor::MonitorMotorTemperature() {
     if (temp_ > 125) { // 高于125℃
-        flag_ = false;
+        flag_ = 1;
     }
 }
 
 void M3508_Motor::MonitorMotorCurrent() {
     if (current_ > 14.5) { //电流值高于14.5A
-        flag_ = false;
+        flag_ = 1;
     }
 }
 
