@@ -20,6 +20,7 @@ M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID):
 void M3508_Motor::MotorInitialization() {
     //初始化
 
+
     //保护输出：0
     MotorOutput(0);
 }
@@ -64,12 +65,23 @@ void M3508_Motor::TimerCallback() {
         case TORQUE:
             break;
         case SPEED:
+            output_intensity_ = spid_.calc(target_speed_, fdb_speed_)
+                                + feedforward_intensity_;
             break;
         case POSITION_SPEED:
+            target_speed_ = ppid_.calc(target_angle_, fdb_angle_)
+                            + feedforward_speed_;
+            output_intensity_ = spid_.calc(target_speed_, fdb_speed_)
+                            + feedforward_intensity_;
             break;
         default:
             break;
     }
+    //监测motor状态
+    MonitorMotorCurrent();
+    MonitorMotorTemperature();
+    //输出发包
+    MotorOutput(output_intensity_);
 }
 
 // from torque to current current = 2.7 * torque + 0.2
@@ -102,15 +114,18 @@ void M3508_Motor::MotorOutput(const float torque) {
     MotorOutput();
 }
 void M3508_Motor::SetPosition(float target_position, float feedforward_speed, float feedforward_intensity) {
+    control_method_ = POSITION_SPEED;
     target_angle_ = target_position;
     feedforward_speed_ = feedforward_speed;
     feedforward_intensity_ = feedforward_intensity;
 }
 void M3508_Motor::SetSpeed(float target_speed, float feedforward_intensity) {
+    control_method_ = SPEED;
     target_speed_ = target_speed;
     feedforward_intensity_ = feedforward_intensity;
 }
 void M3508_Motor::SetIntensity(float intensity) {
+    control_method_ = TORQUE;
     output_torque_ = intensity;
 }
 
@@ -122,14 +137,14 @@ void M3508_Motor::SetFlag(bool flag) {
     }
 }
 
-void M3508_Motor::monitor_motor_temperature() {
-    if (temp_ > 125) {
+void M3508_Motor::MonitorMotorTemperature() {
+    if (temp_ > 125) { // 高于125℃
         flag_ = false;
     }
 }
 
-void M3508_Motor::monitor_motor_current() {
-    if (current_ > 14.5) {
+void M3508_Motor::MonitorMotorCurrent() {
+    if (current_ > 14.5) { //电流值高于14.5A
         flag_ = false;
     }
 }

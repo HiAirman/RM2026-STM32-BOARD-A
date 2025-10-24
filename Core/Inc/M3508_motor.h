@@ -89,8 +89,8 @@ private :
         POSITION_SPEED,
     } control_method_;
     //私有方法
-    void monitor_motor_temperature();
-    void monitor_motor_current();
+    void MonitorMotorTemperature();
+    void MonitorMotorCurrent();
 };
 
 extern M3508_Motor motor1;
