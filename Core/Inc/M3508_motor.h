@@ -6,6 +6,7 @@
 //      初始化（安全帧）
 //      收到CAN信息的同步解析回调函数
 //      控制电机转矩函数（电流与输出转矩是一次函数关系）
+//
 //      （暂时）保护flag，按下按钮改变
 //      getter
 //      setter
@@ -23,6 +24,7 @@
 #define RM_A_BOARD_TEST_DEV_M3508_MOTOR_H
 
 #include "main.h"
+#include "pid.h"
 
 class M3508_Motor {
 public:
@@ -31,9 +33,15 @@ public:
     void MotorInitialization();
     //CAN RX 回调函数中调用
     void CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID);
+    //TIM触发回调函数
+    void TimerCallback();
     //控制电机输出对应扭矩
     void MotorOutput();
     void MotorOutput(const float torque);
+    //前馈pid控制
+    void SetPosition(float target_position, float feedforward_speed, float feedforward_intensity);
+    void SetSpeed(float target_speed, float feedforward_intensity);
+    void SetIntensity(float intensity);
     //将flag设为对应值
     void SetFlag(bool flag);
     //getters
@@ -69,6 +77,17 @@ private :
         .DLC = 8, //数据长度
         .TransmitGlobalTime = DISABLE
     };
+
+    //PID器
+    PID spid_, ppid_; //speed pid and position pid
+    float target_angle_, fdb_angle_; //目标角度和反馈角度
+    float target_speed_, fdb_speed_, feedforward_speed_; //目标速度、电机反馈速度、前馈速度
+    float feedforward_intensity_, output_intensity_; //前馈力矩强度、输出力矩强度
+    enum {
+        TORQUE,
+        SPEED,
+        POSITION_SPEED,
+    } control_method_;
     //私有方法
     void monitor_motor_temperature();
     void monitor_motor_current();

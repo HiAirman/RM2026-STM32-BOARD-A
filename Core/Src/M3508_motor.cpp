@@ -58,6 +58,20 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
     angle_ += delta_angle_;
 }
 
+void M3508_Motor::TimerCallback() {
+    //分模式计算
+    switch (control_method_) {
+        case TORQUE:
+            break;
+        case SPEED:
+            break;
+        case POSITION_SPEED:
+            break;
+        default:
+            break;
+    }
+}
+
 // from torque to current current = 2.7 * torque + 0.2
 void M3508_Motor::MotorOutput() {
     if (flag_ == false) {
@@ -86,6 +100,18 @@ void M3508_Motor::MotorOutput() {
 void M3508_Motor::MotorOutput(const float torque) {
     set_output_torque(torque);
     MotorOutput();
+}
+void M3508_Motor::SetPosition(float target_position, float feedforward_speed, float feedforward_intensity) {
+    target_angle_ = target_position;
+    feedforward_speed_ = feedforward_speed;
+    feedforward_intensity_ = feedforward_intensity;
+}
+void M3508_Motor::SetSpeed(float target_speed, float feedforward_intensity) {
+    target_speed_ = target_speed;
+    feedforward_intensity_ = feedforward_intensity;
+}
+void M3508_Motor::SetIntensity(float intensity) {
+    output_torque_ = intensity;
 }
 
 void M3508_Motor::SetFlag(bool flag) {
