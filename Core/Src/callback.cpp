@@ -20,4 +20,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
     }
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {}
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+    //Test1
+    //空，看rx数值
+    //Test2
+    //不开前馈，纯pid
+    // motor1.TimerCallback();
+    //Test3
+    //开前馈
+    // motor1.TimerCallback();
+}

@@ -26,6 +26,17 @@
 #include "main.h"
 #include "pid.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void Motor_Init(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 class M3508_Motor {
 public:
     explicit M3508_Motor(float kratio, const int motor_rx_ID,

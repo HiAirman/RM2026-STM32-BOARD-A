@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "M3508_motor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -124,6 +124,8 @@ int main(void)
     HAL_CAN_Start(&hcan1);
     //激活CAN接收中断
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+    //Motor 初始化
+    Motor_Init();
 
     //启动timer6并使能中断
     HAL_TIM_Base_Start_IT(&htim6);

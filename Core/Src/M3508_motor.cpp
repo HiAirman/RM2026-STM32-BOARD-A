@@ -13,6 +13,11 @@ extern uint16_t speed;
 extern uint16_t current;
 extern uint8_t temperature;
 
+void Motor_Init() {
+    motor1.MotorInitialization();
+}
+
+
 M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID,
                         const float kp_ppid, const float ki_ppid,const float kd_ppid,
                         const float kp_spid, const float ki_spid, const float kd_spid):
