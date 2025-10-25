@@ -11,7 +11,7 @@ extern CAN_TxHeaderTypeDef tx_header;
 extern uint8_t rx_data[8];
 extern uint8_t tx_data[8];
 extern uint8_t is_button_pressed;
-uint8_t is_flag_opporsited = 0;
+uint8_t is_flag_reversed = 0;
 uint16_t sum_pressed = 0,sum_unpressed = 0;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
@@ -52,18 +52,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
             sum_unpressed = 0;
         }
         //置反逻辑
-        if (is_button_pressed == 1 && is_flag_opporsited == 0) {
+        if (is_button_pressed == 1 && is_flag_reversed == 0) {
             uint8_t flag = motor1.get_flag();
-            if (flag) {
+            if (flag == 1) {
                 motor1.SetFlag( 0 );
 
             } else {
                 motor1.SetFlag( 1 );
             }
-            is_flag_opporsited = 1;
+            is_flag_reversed = 1;
         }
-        if (is_button_pressed == 0 && is_flag_opporsited == 1) {
-            is_flag_opporsited = 0;
+        if (is_button_pressed == 0 && is_flag_reversed == 1) {
+            is_flag_reversed = 0;
         }
     }
 }
