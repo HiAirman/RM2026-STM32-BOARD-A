@@ -10,6 +10,9 @@ extern CAN_RxHeaderTypeDef rx_header;
 extern CAN_TxHeaderTypeDef tx_header;
 extern uint8_t rx_data[8];
 extern uint8_t tx_data[8];
+extern uint8_t is_button_pressed;
+uint8_t is_flag_opporsited = 0;
+uint16_t sum_pressed = 0,sum_unpressed = 0;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
     if (hcan->Instance == CAN1) {
@@ -21,12 +24,46 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-    //Test1
-    //空，看rx数值
-    //Test2
-    //不开前馈，纯pid
-    // motor1.TimerCallback();
-    //Test3
-    //开前馈
-    // motor1.TimerCallback();
+    if (htim->Instance == TIM6) {
+        //Test1
+        //空，看rx数值
+        //Test2
+        //不开前馈，纯pid
+        // motor1.TimerCallback();
+        //Test3
+        //开前馈
+        // motor1.TimerCallback();
+    }
+    //按键置反flag
+    if (htim->Instance == TIM7) {
+        //按键监测
+        if (HAL_GPIO_ReadPin(SWKEY_GPIO_Port,SWKEY_Pin) == GPIO_PIN_SET && is_button_pressed == 0) {
+            sum_pressed++;
+        }
+        if (sum_pressed >= 10) {
+            is_button_pressed = 1;
+            sum_pressed = 0;
+        }
+        if (HAL_GPIO_ReadPin(SWKEY_GPIO_Port,SWKEY_Pin) == GPIO_PIN_RESET && is_button_pressed == 1) {
+            sum_unpressed++;
+        }
+        if (sum_unpressed >= 10) {
+            is_button_pressed = 0;
+            sum_unpressed = 0;
+        }
+        //置反逻辑
+        if (is_button_pressed == 1 && is_flag_opporsited == 0) {
+            uint8_t flag = motor1.get_flag();
+            if (flag) {
+                motor1.SetFlag( 0 );
+
+            } else {
+                motor1.SetFlag( 1 );
+            }
+            is_flag_opporsited = 1;
+        }
+        if (is_button_pressed == 0 && is_flag_opporsited == 1) {
+            is_flag_opporsited = 0;
+        }
+    }
 }

@@ -60,9 +60,10 @@ public:
     //将flag设为对应值
     void SetFlag(const uint8_t flag);
     //getters
-    void get_angle();
-    void get_rotate_speed();
-    void get_temperature();
+    uint8_t get_flag();
+    float get_angle();
+    float get_rotate_speed();
+    float get_temperature();
     //setters
     void set_output_torque(const float torque);
 

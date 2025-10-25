@@ -73,6 +73,9 @@ uint16_t angle = 0;
 uint16_t speed = 0;
 uint16_t current = 0;
 uint8_t temperature = 0;
+
+//button 按下
+uint8_t is_button_pressed = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,6 +120,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
     //CAN 过滤规则配置
     HAL_CAN_ConfigFilter(&hcan1, &filter_config);
@@ -127,8 +131,9 @@ int main(void)
     //Motor 初始化
     Motor_Init();
 
-    //启动timer6并使能中断
+    //启动timers并使能中断
     HAL_TIM_Base_Start_IT(&htim6);
+    HAL_TIM_Base_Start_IT(&htim7);
 
     //test
     tx_data[0] = 0x00;

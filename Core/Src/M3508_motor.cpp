@@ -164,6 +164,20 @@ void M3508_Motor::SetFlag(const uint8_t flag) {
     }
 }
 
+uint8_t M3508_Motor::get_flag() {
+    return flag_;
+}
+float M3508_Motor::get_angle() {
+    return angle_;
+}
+float M3508_Motor::get_rotate_speed() {
+    return rotate_speed_;
+}
+float M3508_Motor::get_temperature() {
+    return temp_;
+}
+void M3508_Motor::set_output_torque(const float torque) {}
+
 void M3508_Motor::MonitorMotorTemperature() {
     if (temp_ > 125) { // 高于125℃
         flag_ = 1;
