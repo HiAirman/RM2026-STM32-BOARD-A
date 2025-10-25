@@ -66,7 +66,7 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
             delta_angle_ = (ecd_angle_ - 360.f - last_ecd_angle_) / kratio_;
         }
     }
-    angle_ += delta_angle_;
+    angle_ += delta_angle_; //angle_ 是从0开始累加的
 
     //为pid传送数据
     fdb_angle_ = angle_;
@@ -74,6 +74,8 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
 }
 
 void M3508_Motor::TimerCallback() {
+    //计算前馈值
+    //feedforward_intensity_ = FeedforwardIntensityCalc(angle_);
     //分模式计算
     switch (control_method_) {
         case TORQUE:
@@ -142,6 +144,11 @@ void M3508_Motor::SetSpeed(float target_speed, float feedforward_intensity) {
 void M3508_Motor::SetIntensity(float intensity) {
     control_method_ = TORQUE;
     output_torque_ = intensity;
+}
+
+//Intensity = 500g * G * 55.24*0.001m * sin(angle)
+float M3508_Motor::FeedforwardIntensityCalc(float current_angle) {
+    return 0.5 * 9.8 * 0.05524 * sin(current_angle);
 }
 
 void M3508_Motor::SetFlag(const uint8_t flag) {

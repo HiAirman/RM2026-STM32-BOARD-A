@@ -44,6 +44,8 @@ public:
     void SetPosition(float target_position, float feedforward_speed, float feedforward_intensity);
     void SetSpeed(float target_speed, float feedforward_intensity);
     void SetIntensity(float intensity);
+    //前馈力矩计算
+    float FeedforwardIntensityCalc(float current_angle);
     //将flag设为对应值
     void SetFlag(const uint8_t flag);
     //getters
