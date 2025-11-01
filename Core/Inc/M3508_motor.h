@@ -36,13 +36,20 @@ void Motor_Init(void);
 }
 #endif
 
-
+#ifdef __cplusplus
 class M3508_Motor {
 public:
-    explicit M3508_Motor(float kratio, const int motor_rx_ID,
-                        const float kp_ppid, const float ki_ppid,const float kd_ppid,
-                        const float kp_spid, const float ki_spid, const float kd_spi);
-    //初始化应紧跟CAN初始化，在tim初始化之前
+    explicit M3508_Motor(
+        float kratio,
+        const int motor_rx_ID,
+        const float kp_ppid,
+        const float ki_ppid,
+        const float kd_ppid,
+        const float kp_spid,
+        const float ki_spid,
+        const float kd_spi
+    );
+    //初始化应紧跟CAN初始化，在tim初始化和Rx中断初始化之前
     void MotorInitialization();
     //CAN RX 回调函数中调用
     void CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID);
@@ -59,6 +66,8 @@ public:
     float FeedforwardIntensityCalc(float current_angle);
     //将flag设为对应值
     void SetFlag(const uint8_t flag);
+    //监测按钮置反flag
+    void MonitorButton();
     //getters
     uint8_t get_flag();
     float get_angle();
@@ -67,7 +76,7 @@ public:
     //setters
     void set_output_torque(const float torque);
 
-private :
+private:
     const float kratio_ = 0.f; //电机减速比
     const int rx_ID_; //Can接收时对应ID
     //读
@@ -83,16 +92,16 @@ private :
     float output_torque_ = 0.f; // N·m 设置电机输出扭矩
     //flag
     uint8_t flag_ = 1;
+    uint8_t is_button_pressed_ = 0, is_flag_reversed_ = 0;
+    uint16_t sum_pressed_ = 0, sum_unpressed_ = 0;
 
     //can对应结构体
-    CAN_TxHeaderTypeDef tx_header = {
-        .StdId = 0x200, //标准ID
-        .ExtId = 0, //扩展ID
-        .IDE = CAN_ID_STD, //标准ID
-        .RTR = CAN_RTR_DATA, //数据帧
-        .DLC = 8, //数据长度
-        .TransmitGlobalTime = DISABLE
-    };
+    CAN_TxHeaderTypeDef tx_header = { .StdId = 0x200, //标准ID
+                                      .ExtId = 0, //扩展ID
+                                      .IDE = CAN_ID_STD, //标准ID
+                                      .RTR = CAN_RTR_DATA, //数据帧
+                                      .DLC = 8, //数据长度
+                                      .TransmitGlobalTime = DISABLE };
 
     //PID器
     PID spid_, ppid_; //speed pid and position pid
@@ -110,5 +119,7 @@ private :
 };
 
 extern M3508_Motor motor1;
+
+#endif
 
 #endif //RM_A_BOARD_TEST_DEV_M3508_MOTOR_H

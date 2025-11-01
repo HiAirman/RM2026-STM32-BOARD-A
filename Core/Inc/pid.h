@@ -5,15 +5,11 @@
 #ifndef RM_A_BOARD_TEST_DEV_PID_H
 #define RM_A_BOARD_TEST_DEV_PID_H
 
-
-
-
-
+#ifdef __cplusplus
 class PID {
 public:
-    PID(void) : PID(0, 0, 0, 0, 0, 0.001) {}
-    PID(float kp, float ki, float kd, float i_max, float out_max,
-        float d_filter_k = 1, float time = 0.001);
+    PID(void): PID(0, 0, 0, 0, 0, 0.001) {}
+    PID(float kp, float ki, float kd, float i_max, float out_max, float d_filter_k = 1, float time = 0.001);
 
     void reset(void);
     float calc(float ref, float fdb);
@@ -28,6 +24,6 @@ private:
     float pout_, iout_, dout_, last_dout_;
     float time_;
 };
-
+#endif
 
 #endif //RM_A_BOARD_TEST_DEV_PID_H

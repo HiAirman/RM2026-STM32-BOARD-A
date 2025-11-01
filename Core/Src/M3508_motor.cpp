@@ -12,20 +12,31 @@ extern uint16_t angle;
 extern uint16_t speed;
 extern uint16_t current;
 extern uint8_t temperature;
+extern CAN_RxHeaderTypeDef rx_header;
 
 void Motor_Init() {
     motor1.MotorInitialization();
 }
 
-
-M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID,
-                        const float kp_ppid, const float ki_ppid,const float kd_ppid,
-                        const float kp_spid, const float ki_spid, const float kd_spid):
+M3508_Motor::M3508_Motor(
+    const float kratio,
+    const int motor_rx_ID,
+    const float kp_ppid,
+    const float ki_ppid,
+    const float kd_ppid,
+    const float kp_spid,
+    const float ki_spid,
+    const float kd_spid
+):
     kratio_(kratio),
     rx_ID_(motor_rx_ID),
-    target_angle_(0.0f), fdb_angle_(0.0f),
-    target_speed_(0.0f), fdb_speed_(0.0f), feedforward_speed_(0.0f),
-    feedforward_intensity_(0.0f), output_intensity_(0.0f),
+    target_angle_(0.0f),
+    fdb_angle_(0.0f),
+    target_speed_(0.0f),
+    fdb_speed_(0.0f),
+    feedforward_speed_(0.0f),
+    feedforward_intensity_(0.0f),
+    output_intensity_(0.0f),
     control_method_(TORQUE) {
     //initialize pid
     spid_ = PID(kp_spid, ki_spid, kd_spid, 10, 4.7, 1, 0.001); //输出Torque
@@ -34,12 +45,10 @@ M3508_Motor::M3508_Motor(const float kratio, const int motor_rx_ID,
 
 void M3508_Motor::MotorInitialization() {
     //初始化
-
-
+    ecd_angle_ = 283.f;
     //保护输出：0
     MotorOutput(0);
 }
-
 
 void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
     if (rx_ID != rx_ID_) {
@@ -57,20 +66,15 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
     current_ = (int16_t)((rx_data_[4] << 8) | rx_data_[5]) * 20.f / 16384.f; //单位 A
     temp_ = (int8_t)rx_data_[6]; //单位 ℃
 
-    //假定两次采集之间 转动角度小于360 计算angle
-    if (rotate_speed_ >= 0.f) {
-        if (ecd_angle_ > last_ecd_angle_) {
-            delta_angle_ = (ecd_angle_ - last_ecd_angle_) / kratio_;
-        } else {
-            delta_angle_ = (ecd_angle_ + 360.f - last_ecd_angle_) / kratio_;
-        }
-    } else {
-        if (ecd_angle_ < last_ecd_angle_) {
-            delta_angle_ = (ecd_angle_ - last_ecd_angle_) / kratio_;
-        } else {
-            delta_angle_ = (ecd_angle_ - 360.f - last_ecd_angle_) / kratio_;
-        }
+    //假定两次采集之间 转动角度小于180 计算angle
+    delta_angle_ = ecd_angle_ - last_ecd_angle_;
+    if (delta_angle_ > 180.f) {
+        delta_angle_ -= 360.f;
+    } else if (delta_angle_ < -180.f) {
+        delta_angle_ += 360.f;
     }
+
+    delta_angle_ /= kratio_;
     angle_ += delta_angle_; //angle_ 是从0开始累加的
 
     //为pid传送数据
@@ -86,14 +90,11 @@ void M3508_Motor::TimerCallback() {
         case TORQUE:
             break;
         case SPEED:
-            output_intensity_ = spid_.calc(target_speed_, fdb_speed_)
-                                + feedforward_intensity_;
+            output_intensity_ = spid_.calc(target_speed_, fdb_speed_) + feedforward_intensity_;
             break;
         case POSITION_SPEED:
-            target_speed_ = ppid_.calc(target_angle_, fdb_angle_)
-                            + feedforward_speed_;
-            output_intensity_ = spid_.calc(target_speed_, fdb_speed_)
-                            + feedforward_intensity_;
+            target_speed_ = ppid_.calc(target_angle_, fdb_angle_) + feedforward_speed_;
+            output_intensity_ = spid_.calc(target_speed_, fdb_speed_) + feedforward_intensity_;
             break;
         default:
             break;
@@ -130,11 +131,11 @@ void M3508_Motor::MotorOutput() {
         HAL_CAN_AddTxMessage(&hcan1, &tx_header, motor_tx_data, &txMailBox);
     }
 }
-
 void M3508_Motor::MotorOutput(const float torque) {
     set_output_torque(torque);
     MotorOutput();
 }
+
 void M3508_Motor::SetPosition(float target_position, float feedforward_speed, float feedforward_intensity) {
     control_method_ = POSITION_SPEED;
     target_angle_ = target_position;
@@ -163,6 +164,36 @@ void M3508_Motor::SetFlag(const uint8_t flag) {
         flag_ = 1;
     }
 }
+void M3508_Motor::MonitorButton() {
+    if (HAL_GPIO_ReadPin(SWKEY_GPIO_Port, SWKEY_Pin) == GPIO_PIN_SET && is_button_pressed_ == 0) {
+        sum_pressed_++;
+    }
+    if (sum_pressed_ >= 5) {
+        is_button_pressed_ = 1;
+        sum_pressed_ = 0;
+    }
+    if (HAL_GPIO_ReadPin(SWKEY_GPIO_Port, SWKEY_Pin) == GPIO_PIN_RESET && is_button_pressed_ == 1) {
+        sum_unpressed_++;
+    }
+    if (sum_unpressed_ >= 5) {
+        is_button_pressed_ = 0;
+        sum_unpressed_ = 0;
+    }
+    //置反逻辑
+    if (is_button_pressed_ == 1 && is_flag_reversed_ == 0) {
+        uint8_t flag = motor1.get_flag();
+        if (flag == 1) {
+            motor1.SetFlag(0);
+
+        } else {
+            motor1.SetFlag(1);
+        }
+        is_flag_reversed_ = 1;
+    }
+    if (is_button_pressed_ == 0 && is_flag_reversed_ == 1) {
+        is_flag_reversed_ = 0;
+    }
+}
 
 uint8_t M3508_Motor::get_flag() {
     return flag_;
@@ -176,6 +207,7 @@ float M3508_Motor::get_rotate_speed() {
 float M3508_Motor::get_temperature() {
     return temp_;
 }
+
 void M3508_Motor::set_output_torque(const float torque) {}
 
 void M3508_Motor::MonitorMotorTemperature() {
@@ -183,14 +215,10 @@ void M3508_Motor::MonitorMotorTemperature() {
         flag_ = 1;
     }
 }
-
 void M3508_Motor::MonitorMotorCurrent() {
     if (current_ > 14.5) { //电流值高于14.5A
         flag_ = 1;
     }
 }
 
-
-M3508_Motor motor1 = M3508_Motor(3591 / 187, 0x201,
-                                0.01, 0.0, 0.0,
-                                0.01, 0.0, 0.0);
+M3508_Motor motor1 = M3508_Motor(3591 / 187, 0x204, 0.01, 0.0, 0.0, 0.01, 0.0, 0.0);
