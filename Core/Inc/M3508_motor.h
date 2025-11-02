@@ -30,7 +30,8 @@
 extern "C" {
 #endif
 
-void Motor_Init(void);
+void MotorInit(void);
+void MotorTest();
 
 #ifdef __cplusplus
 }
@@ -59,11 +60,12 @@ public:
     void MotorOutput();
     void MotorOutput(const float torque);
     //前馈pid控制: 设置目标
-    void SetPosition(float target_position, float feedforward_speed, float feedforward_intensity);
-    void SetSpeed(float target_speed, float feedforward_intensity);
+    //单位 °
+    void SetPosition(float target_position);
+    //单位 °/s
+    void SetSpeed(float target_speed);
+    //单位 N*m
     void SetIntensity(float intensity);
-    //前馈力矩计算
-    float FeedforwardIntensityCalc(float current_angle);
     //将flag设为对应值
     void SetFlag(const uint8_t flag);
     //监测按钮置反flag
@@ -105,7 +107,8 @@ private:
 
     //PID器
     PID spid_, ppid_; //speed pid and position pid
-    float target_angle_, fdb_angle_; //目标角度和反馈角度
+    //控制系统变量
+    float target_angle_, last_target_angle_ = 0, fdb_angle_; //目标角度和反馈角度
     float target_speed_, fdb_speed_, feedforward_speed_; //目标速度、电机反馈速度、前馈速度
     float feedforward_intensity_, output_intensity_; //前馈力矩强度、输出力矩强度
     enum {
@@ -116,6 +119,9 @@ private:
     //私有方法
     void MonitorMotorTemperature();
     void MonitorMotorCurrent();
+    //前馈力矩、速度计算
+    float FeedforwardIntensityCalc(float current_angle);
+    float FeedforwardSpeedCalc(float current_target_position, float last_targret_position); //暂时不可用
 };
 
 extern M3508_Motor motor1;

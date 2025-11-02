@@ -113,14 +113,14 @@ int main(void) {
     MX_CAN1_Init();
     MX_TIM6_Init();
     MX_TIM7_Init();
-
     /* USER CODE BEGIN 2 */
     //CAN 过滤规则配置
+
     HAL_CAN_ConfigFilter(&hcan1, &filter_config);
     //启动CAN控制器
     HAL_CAN_Start(&hcan1);
     //Motor 初始化
-    Motor_Init();
+    MotorInit();
     //激活CAN接收中断
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
     //启动timers并使能中断
@@ -141,6 +141,10 @@ int main(void) {
     speed = 0;
     current = 0;
     temperature = 0;
+
+    //测试代码
+    MotorTest();
+
     /* USER CODE END 2 */
 
     /* Infinite loop */

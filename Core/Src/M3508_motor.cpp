@@ -14,8 +14,17 @@ extern uint16_t current;
 extern uint8_t temperature;
 extern CAN_RxHeaderTypeDef rx_header;
 
-void Motor_Init() {
+void MotorInit() {
     motor1.MotorInitialization();
+}
+
+void MotorTest() {
+    //力矩输出不含pid
+    motor1.SetIntensity(0.1); //不得大于0.2
+    //速度输出单环pid
+    //motor1.SetSpeed(10);
+    //位置输出双环pid
+    //motor1.SetPosition(20);
 }
 
 M3508_Motor::M3508_Motor(
@@ -85,7 +94,8 @@ void M3508_Motor::CanRxMsgCallBack(const uint8_t rx_data_[8], const int rx_ID) {
 void M3508_Motor::TimerCallback() {
     //计算前馈值
     //feedforward_intensity_ = FeedforwardIntensityCalc(angle_);
-    //分模式计算
+    //feedforward_speed_ = FeedforwardSpeedCalc(target_angle_, last_target_angle_);
+    // 分模式计算
     switch (control_method_) {
         case TORQUE:
             break;
@@ -136,25 +146,21 @@ void M3508_Motor::MotorOutput(const float torque) {
     MotorOutput();
 }
 
-void M3508_Motor::SetPosition(float target_position, float feedforward_speed, float feedforward_intensity) {
+void M3508_Motor::SetPosition(float target_position) {
     control_method_ = POSITION_SPEED;
+    last_target_angle_ = target_angle_;
     target_angle_ = target_position;
-    feedforward_speed_ = feedforward_speed;
-    feedforward_intensity_ = feedforward_intensity;
+    feedforward_speed_ = 0;
+    feedforward_intensity_ = 0;
 }
-void M3508_Motor::SetSpeed(float target_speed, float feedforward_intensity) {
+void M3508_Motor::SetSpeed(float target_speed) {
     control_method_ = SPEED;
     target_speed_ = target_speed;
-    feedforward_intensity_ = feedforward_intensity;
+    feedforward_intensity_ = 0;
 }
 void M3508_Motor::SetIntensity(float intensity) {
     control_method_ = TORQUE;
     output_torque_ = intensity;
-}
-
-//Intensity = 500g * G * 55.24*0.001m * sin(angle)
-float M3508_Motor::FeedforwardIntensityCalc(float current_angle) {
-    return 0.5 * 9.8 * 0.05524 * sin(current_angle);
 }
 
 void M3508_Motor::SetFlag(const uint8_t flag) {
@@ -208,7 +214,9 @@ float M3508_Motor::get_temperature() {
     return temp_;
 }
 
-void M3508_Motor::set_output_torque(const float torque) {}
+void M3508_Motor::set_output_torque(const float torque) {
+    output_torque_ = torque;
+}
 
 void M3508_Motor::MonitorMotorTemperature() {
     if (temp_ > 125) { // 高于125℃
@@ -219,6 +227,15 @@ void M3508_Motor::MonitorMotorCurrent() {
     if (current_ > 14.5) { //电流值高于14.5A
         flag_ = 1;
     }
+}
+
+//Intensity = 500g * G * 55.24*0.001m * sin(angle)
+float M3508_Motor::FeedforwardIntensityCalc(float current_angle) {
+    return 0.5 * 9.8 * 0.05524 * sin(current_angle);
+}
+//Speed = delta_angle / time ****not usable yet
+float M3508_Motor::FeedforwardSpeedCalc(float current_target_position, float last_targret_position) {
+    return 0;
 }
 
 M3508_Motor motor1 = M3508_Motor(3591 / 187, 0x204, 0.01, 0.0, 0.0, 0.01, 0.0, 0.0);
